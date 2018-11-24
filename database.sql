@@ -37,7 +37,7 @@ CREATE TABLE customers(
 );
 
 CREATE TABLE cityStores(
-	city_store_id VARCHAR(100) NOT NULL,
+	city_store_id INT(100) NOT NULL AUTO_INCREMENT,
 	city_name VARCHAR(100) NOT NULL,
 	PRIMARY KEY (city_store_id)
 );
@@ -54,7 +54,7 @@ CREATE TABLE trainTrips(
 	train_trip_no INT(100) NOT NULL AUTO_INCREMENT,
 	filled_capacity INT(100) NOT NULL,
 	train_schedule_id INT(100) NOT NULL,
-	city_store_id VARCHAR(100) NOT NULL,
+	city_store_id INT(100) NOT NULL,
 	PRIMARY KEY (train_trip_no)	,
 	FOREIGN KEY (train_schedule_id) REFERENCES trainSchedule(train_schedule_id) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (city_store_id) REFERENCES cityStores(city_store_id) ON DELETE CASCADE ON UPDATE CASCADE
@@ -64,7 +64,7 @@ CREATE TABLE truckRoutes(
 	route_no INT(100) NOT NULL AUTO_INCREMENT,
 	streets VARCHAR(100) NOT NULL,
 	maximum_time TIME NOT NULL,
-	city_store_id VARCHAR(100) NOT NULL,
+	city_store_id INT(100) NOT NULL,
 	PRIMARY KEY (route_no),
 	FOREIGN KEY (city_store_id) REFERENCES cityStores(city_store_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -77,15 +77,16 @@ CREATE TABLE trucks(
 );
 
 CREATE TABLE orders( 
+
 	order_number INT(100) NOT NULL AUTO_INCREMENT,
 	customer_id VARCHAR(100) NOT NULL , 
 	to_building_number VARCHAR(100) NOT NULL , 
 	to_street VARCHAR(100) NOT NULL ,
 	to_city VARCHAR(100) NOT NULL ,
-	delivery_status VARCHAR(100) NOT NULL ,
-	order_price DOUBLE(100,2) NOT NULL,
+	delivery_status VARCHAR(100) DEFAULT 'PENDING',
+	order_price DECIMAL(12,2),
 	route_no INT(100) NOT NULL,
-	train_trip_no INT(100) NOT NULL,
+	train_trip_no INT(100) , 
 	PRIMARY KEY (order_number),
 	FOREIGN KEY (customer_id) REFERENCES customers(customer_id) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (route_no) REFERENCES truckRoutes(route_no) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -96,9 +97,8 @@ CREATE TABLE orders(
 CREATE TABLE products(
 	product_id INT(100) NOT NULL AUTO_INCREMENT,
 	product_name VARCHAR(100) NOT NULL ,
-	quantity INT(100) NOT NULL ,
 	train_capacity_consumption DOUBLE(100,2) NOT NULL ,
-	price DOUBLE(100,2) NOT NULL,
+	price DECIMAL(12,2) NOT NULL,
 	PRIMARY KEY (product_id)
 	
 );
@@ -106,10 +106,17 @@ CREATE TABLE products(
 CREATE TABLE order_product(
 	order_number INT(100) NOT NULL,
 	product_id INT(100) NOT NULL,
+	quantity INT(100) NOT NULL,
+	price DECIMAL(12,2) NOT NULL,
 	PRIMARY KEY(order_number,product_id),
 	FOREIGN KEY (order_number) REFERENCES orders(order_number) ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+/* CREATE TABLE inventory(
+	product_id INT(100) NOT NULL AUTO_INCREMENT,
+	product_name VARCHAR(100) NOT NULL ,
+); */
 
 CREATE TABLE drivers(
 	driver_id INT(100) NOT NULL AUTO_INCREMENT,
@@ -137,7 +144,7 @@ CREATE TABLE assistantDrivers(
 
 CREATE TABLE truckSchedule(
 	schedule_no INT(100) NOT NULL AUTO_INCREMENT,
-	city_store_id VARCHAR(100) NOT NULL,
+	city_store_id INT(100) NOT NULL,
 	driver_id INT(100) NOT NULL,
 	assistant_driver_id INT(100) NOT NULL,
 	route_no INT(100) NOT NULL,

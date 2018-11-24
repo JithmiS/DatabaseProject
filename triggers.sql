@@ -24,3 +24,23 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+CREATE TRIGGER order_product_insert BEFORE INSERT ON order_product
+FOR EACH ROW
+BEGIN
+	DECLARE unit_price DECIMAL(12,2);
+	SET unit_price = (SELECT price from products where product_id = new.product_id);
+	SET NEW.price = unit_price*new.quantity;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER order_insert  after insert ON orders
+for each row
+BEGIN
+	insert into orders (order_price) values
+	(select total from (SELECT order_number, SUM(price) as total from order_product group by order_product.order_number ) as t
+	where orders.order_number=t.order_number) ;
+	
+END$$
+DELIMITER ;
