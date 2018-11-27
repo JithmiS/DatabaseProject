@@ -31,13 +31,24 @@ if (isset($_POST['login'])) {
 			$errors[] = "Invalid Username / Password";
 		}
 		
-        $query = "SELECT * FROM admins WHERE email='{$email}' AND password=password({$password}) AND is_deleted=0 LIMIT 1";
+        $query = "SELECT * FROM managers WHERE email='{$email}' AND password=password({$password}) AND is_deleted=0 LIMIT 1";
         $result_set = mysqli_query($connection, $query);
         verifyQuery($result_set);
         if (mysqli_num_rows($result_set) == 1) {
-            $admin = mysqli_fetch_assoc($result_set);
-            $_SESSION['admin_id'] = $admin['admin_id'];
-            header("Location: admin.php?msg=login_success&&admin_id={$_SESSION['admin_id']}");
+            $manager = mysqli_fetch_assoc($result_set);
+            $_SESSION['manager_id'] = $manager['manager_id'];
+            header("Location: manager.php?msg=login_success&&manager_id={$_SESSION['manager_id']}");
+        }else{
+			$errors[] = "Invalid Username / Password";
+		}
+		
+		$query = "SELECT * FROM storeManagers WHERE email='{$email}' AND password=password({$password}) AND is_deleted=0 LIMIT 1";
+        $result_set = mysqli_query($connection, $query);
+        verifyQuery($result_set);
+        if (mysqli_num_rows($result_set) == 1) {
+            $store_manager = mysqli_fetch_assoc($result_set);
+            $_SESSION['store_manager_id'] = $store_manager['store_manager_id'];
+            header("Location: storeManager.php?msg=login_success&&store_manager_id={$_SESSION['store_manager_id']}");
         }else{
 			$errors[] = "Invalid Username / Password";
 		}

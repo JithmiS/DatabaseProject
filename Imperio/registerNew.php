@@ -2,41 +2,41 @@
 <?php require_once('includes/functions.php') ?>
 <?php require_once('includes/connection.php') ?>
 
+
+<?php 
+if (!isset($_SESSION['manager_id'])) {
+    header('Location:index.php');
+}
+?>
+
 <?php
+
 $firstname = '';
 $lastname = '';
 $email = '';
-$password = '';
-$contact_number = '';
 $address = '';
-$confirmPassword = '';
-$type = '';
+$contact_number = '';
+
+ 
 if (isset($_POST['register'])) {
 	$errors = array();
     $firstname = $_POST['firstname'];
     $lastname = $_POST['lastname'];
-    $email = mysqli_real_escape_string($connection, $_POST['email']);
-    $password = $_POST['password'];
+    $email = $_POST['email'];
+    $address = $_POST['address'];
 	$contact_number = $_POST['contact_number'];
-	$address = $_POST['address'];
-    $type= $_POST['type'];
-    // checking required fields
-    $reqFields = array('firstname', 'lastname', 'email','contact_number','address','password', 'type');
+    $password = $_POST['password'];
+    $position = $_POST['position'];
+    
+	
+    // checking for all fields 
+    $reqFields = array('firstname', 'lastname', 'email', 'address','contact_number', 'position', 'password');
     $errors = array_merge($errors, checkReqFields($reqFields));
 
     // check max len fields
-    $maxLenFields = array('email' => 100, 'password' => 8);
+    $maxLenFields = array('email' => 100, 'password' => 40);
     $errors = array_merge($errors, checkMaxLenFields($maxLenFields));
-	
-	//check validate number
-	// $LenFields = array('contact_number' => 10);
-    // $errors = array_merge($errors, checkEqualLenFields($LenFields));
 
-    //checking if passwords match
-    if (!($_POST['password'] === $_POST['confirmPassword'])) {
-        $errors[] = "password not match";
-    }
-    //check if email already exists...
     $query = "SELECT * FROM customers WHERE email='{$email}'";
     $resultSet = mysqli_query($connection, $query);
     verifyQuery($resultSet);
@@ -46,85 +46,73 @@ if (isset($_POST['register'])) {
     $query = "SELECT * FROM managers WHERE email='{$email}'";
     $result = mysqli_query($connection, $query);
     verifyQuery($result);
-    if (mysqli_num_rows($result) > 0) {
+    if (mysqli_num_rows($result) != 0) {
         $errors[] = 'email already exists';
     }
-	
-	$query = "SELECT * FROM storeManagers WHERE email='{$email}'";
-    $result = mysqli_query($connection, $query);
-    verifyQuery($result);
-    if (mysqli_num_rows($result) > 0) {
-        $errors[] = 'email already exists';
-    }
-	
     $query = "SELECT * FROM drivers WHERE email='{$email}'";
     $result = mysqli_query($connection, $query);
     verifyQuery($result);
-    if (mysqli_num_rows($result) > 0) {
+    if (mysqli_num_rows($result) != 0) {
         $errors[] = 'email already exists';
     }
-	$query = "SELECT * FROM assistantDrivers WHERE email='{$email}'";
+    $query = "SELECT * FROM assistantDrivers WHERE email='{$email}'";
     $result = mysqli_query($connection, $query);
     verifyQuery($result);
-    if (mysqli_num_rows($result) > 0) {
+    if (mysqli_num_rows($result) != 0) {
         $errors[] = 'email already exists';
     }
-
-      if (empty($errors)) {
-
-        $firstname = mysqli_real_escape_string($connection, $_POST['firstname']);
+   
+    if (empty($errors)) {
+		$firstname = mysqli_real_escape_string($connection, $_POST['firstname']);
         $lastname = mysqli_real_escape_string($connection, $_POST['lastname']);
         $email = mysqli_real_escape_string($connection, $_POST['email']);
-		$contact_number = mysqli_real_escape_string($connection, $_POST['contact_number']);
 		$address = mysqli_real_escape_string($connection, $_POST['address']);
         $password = mysqli_real_escape_string($connection, $_POST['password']);
-        $hashedPassword = sha1($password);
-        $type = $_POST['type'];
-		$query = "INSERT INTO customers(first_name,last_name,customer_role,email,contact_number,address,password,is_deleted) VALUES('{$firstname}','{$lastname}','{$type}','{$email}','{$contact_number}','{$address}',password({$password}),0)";
-        $result = mysqli_query($connection, $query);
+        // $hashedPassword = sha1($password);
+		
+		if($position == 'manager'){
+			$query = "INSERT INTO managers(first_name, last_name, email, address, contact_number, password, is_deleted) VALUES('{$firstname}','{$lastname}','{$email}','{$address}','{$contact_number}',password({$password}),0)";
+		}else if($position == 'driver'){
+			$query = "INSERT INTO drivers(first_name, last_name, email, address, contact_number, password, is_deleted) VALUES('{$firstname}','{$lastname}','{$email}','{$address}','{$contact_number}',password({$password}),0)";
+		}else if($position == 'assistant_driver'){
+			$query = "INSERT INTO assistantDrivers(first_name, last_name, email, address, contact_number, password, is_deleted) VALUES('{$firstname}','{$lastname}','{$email}','{$address}','{$contact_number}',password({$password}),0)";
+		}
+	    $result = mysqli_query($connection, $query);
         verifyQuery($result);
-		
-		
-		// $query = "CREATE USER '{$email}'@localhost IDENTIFIED BY '{$password}';";
-		// $result = mysqli_query($connection, $query);
-        // verifyQuery($result);
-		// $query = "GRANT SELECT ON *.* TO '{$email}'@localhost' WITH GRANT OPTION;";
-		// $result = mysqli_query($connection, $query);
-        // verifyQuery($result);
-		
-		
-		
-        // $query = "SELECT * FROM customers WHERE email='{$email}' LIMIT 1";
+
+        // $query = "SELECT * FROM admins WHERE email='{$email}' LIMIT 1";
         // $result = mysqli_query($connection, $query);
         // verifyQuery($result);
         // if (mysqli_num_rows($result) != 1) {
             // echo 'Error';
         // } else {
-            // $customer = mysqli_fetch_assoc($result);
-            // $userObject = $user['object'];
-            // $userId = $user['id'];
-            // $userObject = unserialize($userObject);
-            // $userObject->setuserId($userId);
+            // $admin = mysqli_fetch_assoc($result);
+            // $adminObject = $admin['object'];
+            // $adminId = $admin['id'];
+            // $adminObject = unserialize($adminObject);
+            // $adminObject->setAdminId($adminId);
 
-            // $userObject = serialize($userObject);
+            // $adminObject = serialize($adminObject);
 
-			//save back in data base
-            // $query = "UPDATE users SET object='{$userObject}' WHERE id='{$userId}'";
+            //save back in data base
+            // $query = "UPDATE admins SET object='{$adminObject}' WHERE id='{$adminId}'";
             // $result = mysqli_query($connection, $query);
             // verifyQuery($result);
 
             //send welcome message
             // $message = "Welcome To Vertex Medical Center";
             // $time = time();
-            // $query = "INSERT INTO messages(senderId,senderType,recieverId,recieverType,message,isRead,senderName,timeStamp) VALUES(99999,'system','{$userId}','user','{$message}',0,'vertex medical center','{$time}')";
+            // $query = "INSERT INTO messages(senderId,senderType,recieverId,recieverType,message,isRead,senderName,timeStamp) VALUES(99999,'system','{$adminId}','admin','{$message}',0,'vertex medical center','{$time}')";
             // $result = mysqli_query($connection, $query);
             // verifyQuery($result);
 
-            header('Location:index.php?msg=register_successful');
-        //}
-    }
+            header('Location:manager.php?msg=register_successful');
+        }
+    
 }
 ?>
+
+
 
 
 <!DOCTYPE HTML>
@@ -152,7 +140,7 @@ if (isset($_POST['register'])) {
 			<nav id="menu">
 				<ul class="links">
 					<li><a href="index.php">Home</a></li>
-					<li><a href="login.php">Login</a></li>
+					<li><a href="registerCustomer.php">Register</a></li>
 					<li><a href="elements.php">Elements</a></li>
 				</ul>
 			</nav>
@@ -165,13 +153,14 @@ if (isset($_POST['register'])) {
 										<div class="container 50%">
 										<div class="box">
 											<!-- Form -->
-												<h3>Register Here</h3>
+												<h3>Add New Member Here</h3>
 												<?php
 												if (isset($errors) && !empty($errors)) {
 													printErrors($errors);
 												}
 												?>
-												<form method="post" action="registerCustomer.php">
+
+												<form method="post" action="registerNew.php">
 													<div class="row uniform">
 														<div class="12u$">
 															 <label for="inputFirstName"><b>First Name:</b></label>
@@ -189,29 +178,29 @@ if (isset($_POST['register'])) {
 														</div>
 														
 														<div class="12u$">
-															<label for="inputContactNumber"><b>Contact Number:</b></label>
-															<input type="text" name="contact_number" class="form-control" id="inputContactNumber" placeholder="0000000000" value = '<?php echo $contact_number ?>'>
-														</div>
-														
-														<div class="12u$">
-															<label for="inputAddress"><b>Address:</b></label>
-															<input type="text" name="address" class="form-control" id="inputAddress" placeholder="no,street,city,country,postal code" value = '<?php echo $address ?>'>
-														</div>
-														
-														<div class="12u$">
-															<label for="type"><b>Customer Type:</b> </label>
-															<select name='type'>
-																<option value='end customer' id="type">End customer</option>
-																<option value='wholesaler' id="type">Wholesaler</option>
-																<option value='retailer' id="type">Retailer</option>
+															<label for="position"><b>Position:</b> </label>
+															<select name='position'>
+																<option value='manager'>Manager</option>
+																<option value='driver'>Driver</option>
+																<option value='assistant_driver'>Assistant Driver</option>
 																
 																
 															</select>
 														</div>
 														
 														<div class="12u$">
+															<label for="address"><b>Adress:</b></label>
+															<input type="text" name="address" placeholder="address " value='<?php echo $address?>'>
+														</div>
+														
+														<div class="12u$">
+															<label for="address"><b>Contact Number:</b></label>
+															<input type="text" name="contact_number" placeholder="contact number" value='<?php echo $contact_number?>'>
+														</div>
+														
+														<div class="12u$">
 															<label for="password"><b>Password:</b></label>
-															<input type="password"  id="password" name="password" placeholder="password">
+															<input type="password" id="password" name="password" placeholder="password">
 
 														</div>
 														
@@ -227,7 +216,7 @@ if (isset($_POST['register'])) {
 															<ul class="actions">
 																<li><input type="submit" name ="register" id="register" value="Register" /></li>
 																<!-- <li><input type="reset" value="Reset" class="alt" /></li> -->
-																<li><a href="index.php" class="button alt">Back</a></li>
+																<li><a href="manager.php" class="button alt">Back</a></li>
 															</ul>
 														</div>
 													</div>
