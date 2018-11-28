@@ -124,3 +124,31 @@ BEGIN
 END$$
 DELIMITER ;
 
+DELIMITER $$
+CREATE TRIGGER truck_trip_update BEFORE UPDATE ON truckTrips
+FOR EACH ROW
+BEGIN
+	DECLARE done INT DEFAULT FALSE;
+	DECLARE route INT(100);
+	DECLARE city INT(100);
+	DECLARE dr_id INT(100);
+	DECLARE last_tr_o INT(100);
+	DECLARE cur1 CURSOR FOR SELECT driver_id,last_trip_no FROM drivers WHERE city_store_id = city;
+	SET route = (SELECT route_no from truckSchedule WHERE truck_schedule_id = NEW.truck_schedule_id);
+	SET city = (SELECT city_store_id from truckRoutes WHERE route_no = route);
+	
+	OPEN cur1
+	read_loop: LOOP
+	FETCH cur1 INTO dr_id, last_tr_no
+		IF done THEN
+		  LEAVE read_loop;
+		END IF;
+		
+		
+		
+	END LOOP;
+	CLOSE cur1
+	DEALLOCATE cur1
+	
+END$$
+DELIMITER ;

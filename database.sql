@@ -3,12 +3,14 @@ CREATE database supplychain1;
 USE supplychain1;
 
 CREATE TABLE users( 
-	user_id INT(100) NOT NULL AUTO_INCREMENT,
 	email VARCHAR(100) NOT NULL , 
+	first_name VARCHAR(100) NOT NULL , 
+	last_name VARCHAR(100) NOT NULL ,
+	address VARCHAR(100) NOT NULL ,
+	contact_number VARCHAR(10) NOT NULL,
 	password VARCHAR(50) NOT NULL ,
-	role VARCHAR(100) NOT NULL ,
 	is_deleted TINYINT(1) NOT NULL,
-	PRIMARY KEY (user_id)
+	PRIMARY KEY (email)
 );
 
 CREATE TABLE cityStores(
@@ -19,41 +21,28 @@ CREATE TABLE cityStores(
 
 CREATE TABLE managers( 
 	manager_id INT(100) NOT NULL AUTO_INCREMENT,
-	first_name VARCHAR(100) NOT NULL , 
-	last_name VARCHAR(100) NOT NULL ,
 	email VARCHAR(100) NOT NULL ,
-	address VARCHAR(100) NOT NULL ,
-	contact_number VARCHAR(10) NOT NULL,
-	password VARCHAR(50) NOT NULL ,
-	is_deleted TINYINT(1) NOT NULL,
-	PRIMARY KEY (manager_id)
+	PRIMARY KEY (manager_id),
+	FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE
+
 );
 
 CREATE TABLE storeManagers( 
 	store_manager_id INT(100) NOT NULL AUTO_INCREMENT,
-	first_name VARCHAR(100) NOT NULL , 
-	last_name VARCHAR(100) NOT NULL ,
 	email VARCHAR(100) NOT NULL ,
-	address VARCHAR(100) NOT NULL ,
-	contact_number VARCHAR(10) NOT NULL,
 	city_store_id INT(100) NOT NULL,
-	password VARCHAR(50) NOT NULL ,
-	is_deleted TINYINT(1) NOT NULL,
 	PRIMARY KEY (store_manager_id),
-	FOREIGN KEY (city_store_id) REFERENCES cityStores(city_store_id) ON DELETE CASCADE ON UPDATE CASCADE
+	FOREIGN KEY (city_store_id) REFERENCES cityStores(city_store_id) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE
+
 );
 
 CREATE TABLE customers( 
 	customer_id VARCHAR(100) NOT NULL,
-	first_name VARCHAR(100) NOT NULL , 
-	last_name VARCHAR(100) NOT NULL , 
 	customer_role ENUM('end customer','wholesaler','retailer'),
 	email VARCHAR(100) NOT NULL ,
-	address VARCHAR(100) NOT NULL ,
-	contact_number VARCHAR(10) NOT NULL,
-	password VARCHAR(50) NOT NULL ,
-	is_deleted TINYINT(1) NOT NULL,
-	PRIMARY KEY (customer_id)
+	PRIMARY KEY (customer_id),
+	FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE trainSchedule(
@@ -143,30 +132,23 @@ CREATE TABLE order_product(
 
 CREATE TABLE drivers(
 	driver_id INT(100) NOT NULL AUTO_INCREMENT,
-	first_name VARCHAR(100) NOT NULL , 
-	last_name VARCHAR(100) NOT NULL ,
 	email VARCHAR(100) NOT NULL ,
-	address VARCHAR(100) NOT NULL ,
-	contact_number VARCHAR(10) NOT NULL,
 	city_store_id INT(100) NOT NULL,
-	password VARCHAR(50) NOT NULL ,
-	is_deleted TINYINT(1) NOT NULL,
+	last_trip_no INT(100) DEFAULT 0,
 	PRIMARY KEY (driver_id),
-	FOREIGN KEY (city_store_id) REFERENCES cityStores(city_store_id) ON DELETE CASCADE ON UPDATE CASCADE
+	FOREIGN KEY (city_store_id) REFERENCES cityStores(city_store_id) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE assistantDrivers(
 	assistant_driver_id INT(100) NOT NULL AUTO_INCREMENT,
-	first_name VARCHAR(100) NOT NULL , 
-	last_name VARCHAR(100) NOT NULL ,
 	email VARCHAR(100) NOT NULL ,
-	address VARCHAR(100) NOT NULL ,
-	contact_number VARCHAR(10) NOT NULL,
 	city_store_id INT(100) NOT NULL,
-	password VARCHAR(50) NOT NULL ,
-	is_deleted TINYINT(1) NOT NULL,
+	last_trip_no INT(100) DEFAULT 0,
 	PRIMARY KEY (assistant_driver_id),
-	FOREIGN KEY (city_store_id) REFERENCES cityStores(city_store_id) ON DELETE CASCADE ON UPDATE CASCADE
+	FOREIGN KEY (city_store_id) REFERENCES cityStores(city_store_id) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE ON UPDATE CASCADE
+
 );
 
 CREATE TABLE truckSchedule(
@@ -191,6 +173,18 @@ CREATE TABLE truckTrips(
 	FOREIGN KEY (driver_id) REFERENCES drivers(driver_id)ON DELETE CASCADE ON UPDATE CASCADE,
 	FOREIGN KEY (assistant_driver_id) REFERENCES assistantDrivers(assistant_driver_id)ON DELETE CASCADE ON UPDATE CASCADE
 );
+
 -- CREATE ROLE endcustomer;
 -- GRANT SELECT ON customers TO endcustomer;
+-- CREATE VIEW matara_orders_view AS SELECT order_number,customer_id,to_building_number,to_street,to_city,order_price,order_size,route_no FROM orders,truckRoutes WHERE orders.route_no=truckRoutes.route_no and city_store_id = 1;
+-- CREATE VIEW galle_orders_view AS SELECT order_number,customer_id,to_building_number,to_street,to_city,order_price,order_size,route_no FROM orders,truckRoutes WHERE orders.route_no=truckRoutes.route_no and city_store_id = 2;
+-- CREATE VIEW colombo_orders_view AS SELECT order_number,customer_id,to_building_number,to_street,to_city,order_price,order_size,route_no FROM orders,truckRoutes WHERE orders.route_no=truckRoutes.route_no and city_store_id = 3;
+
+-- CREATE VIEW matara_trip_view AS SELECT truck_trip_no FROM truckTrips WHERE city_store_id = 1;
+-- CREATE VIEW galle_trip_view AS SELECT truck_trip_no FROM truckTrips WHERE city_store_id = 2;
+-- CREATE VIEW colombo_trip_view AS SELECT truck_trip_no FROM truckTrips WHERE city_store_id = 3;
+
+-- CREATE VIEW matara_driver_view AS SELECT driver_id FROM drivers WHERE city_store_id = 1;
+-- CREATE VIEW galle_driver_view AS SELECT driver_id FROM drivers WHERE city_store_id = 2;
+-- CREATE VIEW colombo_driver_view AS SELECT driver_id FROM drivers WHERE city_store_id = 3;
 
